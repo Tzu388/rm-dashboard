@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RM Morning Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════ */
+:root {
+  --bg:       #080b0f;
+  --s1:       #0e1218;
+  --s2:       #141920;
+  --s3:       #1b2130;
+  --border:   #1f2735;
+  --border2:  #2a3345;
+  --accent:   #00d4aa;
+  --accent2:  #3d8bff;
+  --gold:     #f0c040;
+  --warn:     #ff5252;
+  --text:     #dde3ef;
+  --text2:    #7a8caa;
+  --text3:    #3f4f6a;
+  --up:       #00d4aa;
+  --down:     #ff4060;
+  --mono:     'DM Mono', monospace;
+  --sans:     'Syne', sans-serif;
+  --body:     'Lato', sans-serif;
+  --r:        10px;
+  --r-sm:     6px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.hdr {
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+.hdr-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.logo {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-mark {
+  width: 26px; height: 26px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--bg);
+  font-weight: 800;
+}
+.logo-text { color: var(--text); }
+.logo-text span { color: var(--text3); font-weight: 400; }
+
+.hdr-right { text-align: right; }
+.hdr-time {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+.hdr-date {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 1px;
+}
+
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text3);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 7px 12px 8px;
+  cursor: pointer;
+  transition: color .2s, border-color .2s;
+  text-transform: uppercase;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:hover:not(.active) { color: var(--text2); }
+
+/* ══════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════ */
+.page { display: none; padding: 12px; max-width: 580px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* ══════════════════════════════════════════
+   CARDS & ROWS
+══════════════════════════════════════════ */
+.card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 13px;
+  margin-bottom: 9px;
+}
+.card-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+.card-ttl {
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 5px;
+  border-radius: var(--r-sm);
+  transition: color .2s, background .2s;
+  line-height: 1;
+}
+.icon-btn:hover { color: var(--accent); background: rgba(0,212,170,.08); }
+.icon-btn.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: grab;
+  transition: background .15s;
+  user-select: none;
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--s2); }
+.row.dragging { opacity: .35; background: var(--s3); }
+.row.drag-over { background: rgba(0,212,170,.07); border-color: var(--accent); }
+
+.rl { display: flex; flex-direction: column; gap: 1px; }
+.rl-name {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.rl-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.3px;
+}
+.rr { text-align: right; }
+.rr-price {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+}
+.rr-chg {
+  font-family: var(--mono);
+  font-size: 10px;
+  margin-top: 1px;
+}
+
+.up   { color: var(--up); }
+.down { color: var(--down); }
+.flat { color: var(--text2); }
+
+/* ══════════════════════════════════════════
+   SHIMMER LOADING
+══════════════════════════════════════════ */
+.shim {
+  display: inline-block;
+  background: linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);
+  background-size: 200% 100%;
+  animation: shim 1.3s infinite;
+  border-radius: 3px;
+  height: 12px;
+}
+@keyframes shim { to { background-position: -200% 0; } }
+
+/* ══════════════════════════════════════════
+   STATUS BAR
+══════════════════════════════════════════ */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+.sdot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--up);
+  flex-shrink: 0;
+}
+.sdot.pulse { animation: sdotpulse 2s ease-in-out infinite; }
+@keyframes sdotpulse { 0%,100%{opacity:.3}50%{opacity:1} }
+.sdot.err { background: var(--down); animation: none; }
+.sdot.loading { background: var(--gold); animation: sdotpulse 0.8s ease-in-out infinite; }
+
+/* ══════════════════════════════════════════
+   SUMMARY TILES
+══════════════════════════════════════════ */
+.sum-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.sum-tile {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px;
+  cursor: grab;
+  transition: border-color .2s;
+  user-select: none;
+}
+.sum-tile:hover { border-color: var(--border2); }
+.sum-tile.dragging { opacity: .35; }
+.sum-tile.drag-over { border-color: var(--accent); background: rgba(0,212,170,.05); }
+.st-lbl {
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+.st-price {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 3px;
+  letter-spacing: -0.5px;
+}
+.st-chg { font-family: var(--mono); font-size: 10px; }
+
+/* ══════════════════════════════════════════
+   MARKET HOURS
+══════════════════════════════════════════ */
+.mkt-strip {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-bottom: 10px;
+  padding-bottom: 2px;
+}
+.mkt-strip::-webkit-scrollbar { display: none; }
+.mkt-pill {
+  flex-shrink: 0;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 9px;
+  font-family: var(--mono);
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text2);
+}
+.mdot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.m-open { background: var(--up); box-shadow: 0 0 4px var(--up); }
+.m-closed { background: var(--text3); }
+.m-pre { background: var(--gold); }
+
+/* ══════════════════════════════════════════
+   FX TABLE
+══════════════════════════════════════════ */
+.fx-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 65px;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: grab;
+  border-radius: var(--r-sm);
+  transition: background .15s;
+  user-select: none;
+}
+.fx-row:last-child { border-bottom: none; }
+.fx-row:hover { background: var(--s2); }
+.fx-row.dragging { opacity: .35; }
+.fx-row.drag-over { background: rgba(0,212,170,.07); }
+.fx-pair { font-family: var(--sans); font-size: 12px; font-weight: 700; }
+.fx-rate { font-family: var(--mono); font-size: 12px; text-align: right; }
+.fx-pct  { font-family: var(--mono); font-size: 10px; text-align: right; }
+
+/* ══════════════════════════════════════════
+   YIELDS
+══════════════════════════════════════════ */
+.yield-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 7px;
+  margin-bottom: 9px;
+}
+.yt {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 9px 6px;
+  text-align: center;
+}
+.yt-tenor {
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text3);
+  margin-bottom: 5px;
+}
+.yt-rate { font-family: var(--mono); font-size: 13px; color: var(--text); margin-bottom: 2px; }
+.yt-chg  { font-family: var(--mono); font-size: 9px; }
+
+/* FOMC */
+.fomc-card {
+  background: linear-gradient(135deg, rgba(61,139,255,.07), rgba(0,212,170,.04));
+  border: 1px solid rgba(61,139,255,.2);
+  border-radius: var(--r);
+  padding: 14px;
+  margin-bottom: 9px;
+}
+.fomc-tag {
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 8px;
+}
+.fomc-date { font-family: var(--mono); font-size: 14px; color: var(--text); margin-bottom: 3px; }
+.fomc-sub  { font-size: 11px; color: var(--text2); margin-bottom: 12px; }
+.fomc-sub b { color: var(--gold); font-family: var(--mono); font-weight: 400; }
+
+.prob-row  { margin-bottom: 7px; }
+.prob-lbl  { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--text2); margin-bottom: 4px; }
+.prob-lbl span:last-child { color: var(--text); }
+.bar-track { height: 5px; background: var(--s3); border-radius: 3px; overflow: hidden; }
+.bar-fill  { height: 100%; border-radius: 3px; transition: width .9s cubic-bezier(.4,0,.2,1); }
+.b-hold { background: var(--text3); }
+.b-cut  { background: var(--up); }
+.b-hike { background: var(--down); }
+.prob-note { font-size: 9px; color: var(--text3); margin-top: 8px; font-family: var(--mono); }
+
+/* ══════════════════════════════════════════
+   COMMODITIES
+══════════════════════════════════════════ */
+.comm-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 7px;
+}
+.comm-tile {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 8px;
+  text-align: center;
+  cursor: grab;
+  transition: border-color .2s;
+  user-select: none;
+}
+.comm-tile:hover { border-color: var(--border2); }
+.comm-tile.dragging { opacity: .35; }
+.comm-tile.drag-over { border-color: var(--accent); }
+.ct-icon  { font-size: 18px; margin-bottom: 5px; display: block; }
+.ct-lbl   { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--text3); margin-bottom: 4px; }
+.ct-price { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.ct-chg   { font-family: var(--mono); font-size: 9px; margin-top: 2px; }
+
+/* ══════════════════════════════════════════
+   NEWS
+══════════════════════════════════════════ */
+.news-item {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: grab;
+  transition: border-color .2s;
+  user-select: none;
+}
+.news-item:hover { border-color: var(--border2); }
+.news-item.dragging { opacity: .35; }
+.news-item.drag-over { border-color: var(--accent); }
+.n-tag {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 20px;
+  margin-bottom: 6px;
+}
+.t-reg  { background: rgba(240,192,64,.12);  color: var(--gold); }
+.t-mkt  { background: rgba(0,212,170,.1);    color: var(--up); }
+.t-fi   { background: rgba(61,139,255,.1);   color: var(--accent2); }
+.t-comp { background: rgba(255,82,82,.1);    color: var(--warn); }
+.t-aum  { background: rgba(180,100,255,.1);  color: #b46aff; }
+.t-gen  { background: rgba(255,255,255,.06); color: var(--text2); }
+
+.n-src  { font-family: var(--mono); font-size: 9px; color: var(--text3); margin-bottom: 5px; }
+.n-hl   { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 4px; }
+.n-body { font-size: 11px; color: var(--text2); line-height: 1.55; }
+.n-time { font-family: var(--mono); font-size: 9px; color: var(--text3); margin-top: 6px; }
+.n-link { color: var(--accent2); text-decoration: none; font-size: 10px; font-family: var(--mono); }
+.n-link:hover { text-decoration: underline; }
+
+.news-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 24px;
+  color: var(--text2);
+  font-size: 12px;
+  font-family: var(--mono);
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: dotpulse 1.2s ease-in-out infinite; }
+.dot:nth-child(2) { animation-delay: .2s; }
+.dot:nth-child(3) { animation-delay: .4s; }
+@keyframes dotpulse { 0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1)} }
+
+.news-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.news-tab-btn {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all .2s;
+}
+.news-tab-btn.active, .news-tab-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0,212,170,.07);
+}
+
+/* ══════════════════════════════════════════
+   PROFILES
+══════════════════════════════════════════ */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 9px;
+}
+.prof-btn {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 9px 11px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .2s, background .2s;
+}
+.prof-btn:hover { border-color: var(--border2); }
+.prof-btn.active { border-color: var(--accent); background: rgba(0,212,170,.06); }
+.pb-name { font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.pb-type { font-size: 9px; color: var(--text3); }
+
+.prof-detail {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 15px;
+  margin-bottom: 9px;
+  display: none;
+  animation: fadeIn .2s ease;
+}
+.prof-detail.open { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+.pd-hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.pd-name { font-family: var(--sans); font-size: 16px; font-weight: 800; color: var(--text); }
+.pd-type { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.pd-close { background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 2px;line-height:1; }
+.pd-body  { font-size: 12px; color: var(--text2); line-height: 1.65; }
+.pd-loading { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+/* ══════════════════════════════════════════
+   SECTION LABEL
+══════════════════════════════════════════ */
+.sec-lbl {
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin: 13px 0 7px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sec-lbl::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ══════════════════════════════════════════
+   ADD BOX
+══════════════════════════════════════════ */
+.add-box {
+  border: 1px dashed var(--border2);
+  border-radius: var(--r);
+  padding: 12px;
+  text-align: center;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 9px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.add-box:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,.04); }
+.add-icon { font-size: 16px; display: block; margin-bottom: 3px; color: var(--text3); }
+.add-box:hover .add-icon { color: var(--accent); }
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.modal-title { font-family: var(--sans); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+.modal-input {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 13px;
+  outline: none;
+  margin-bottom: 12px;
+}
+.modal-input:focus { border-color: var(--accent); }
+.modal-input::placeholder { color: var(--text3); }
+.modal-row { display: flex; gap: 8px; }
+.mbtn {
+  flex: 1;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 11px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .3px;
+}
+.mbtn.sec { background: var(--s3); color: var(--text2); }
+
+/* ══════════════════════════════════════════
+   SETUP BANNER
+══════════════════════════════════════════ */
+.setup-banner {
+  background: linear-gradient(135deg, rgba(240,192,64,.1), rgba(61,139,255,.07));
+  border: 1px solid rgba(240,192,64,.25);
+  border-radius: var(--r);
+  padding: 13px;
+  margin-bottom: 9px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.setup-banner b { color: var(--gold); font-weight: 700; }
+.setup-banner code {
+  background: var(--s3);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.setup-banner a { color: var(--accent2); text-decoration: none; }
+.setup-banner a:hover { text-decoration: underline; }
+
+/* tooltip */
+.tip {
+  font-size: 9px;
+  color: var(--text3);
+  font-family: var(--mono);
+  margin-top: 4px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="logo">
+      <div class="logo-mark">RM</div>
+      <div class="logo-text">Morning Brief <span>/ SEA</span></div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-time" id="clock">--:--:--</div>
+      <div class="hdr-date" id="clock-date"></div>
+    </div>
+  </div>
+  <div class="tabs" id="tabs-bar">
+    <button class="tab active" data-tab="summary">Summary</button>
+    <button class="tab" data-tab="fx">FX</button>
+    <button class="tab" data-tab="yields">Yields</button>
+    <button class="tab" data-tab="equities">Equities</button>
+    <button class="tab" data-tab="commodities">Commodities</button>
+    <button class="tab" data-tab="news">News</button>
+    <button class="tab" data-tab="profile">Profiles</button>
+  </div>
+</div>
+
+<!-- ══════ PAGES ══════ -->
+
+<!-- SUMMARY -->
+<div class="page active" id="page-summary">
+  <div class="status"><div class="sdot loading pulse" id="sum-dot"></div><span id="sum-txt">Loading…</span></div>
+  <div class="mkt-strip" id="mkt-strip"></div>
+  <div class="sum-grid" id="sum-grid"></div>
+  <div class="add-box" onclick="openModal('summary')"><span class="add-icon">＋</span>Add instrument</div>
+</div>
+
+<!-- FX -->
+<div class="page" id="page-fx">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ttl">FX Rates · USD Base</div>
+      <button class="icon-btn" id="fx-refresh" onclick="doRefreshFX(this)">↻</button>
+    </div>
+    <div id="fx-body"></div>
+  </div>
+  <div class="add-box" onclick="openModal('fx')"><span class="add-icon">＋</span>Add pair</div>
+</div>
+
+<!-- YIELDS -->
+<div class="page" id="page-yields">
+  <div class="fomc-card" id="fomc-card">
+    <div class="fomc-tag">🏛 Next FOMC</div>
+    <div id="fomc-body"><div class="shim" style="width:160px;height:14px"></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ttl">US Treasury Curve</div>
+      <button class="icon-btn" onclick="doRefreshYields(this)">↻</button>
+    </div>
+    <div class="yield-grid" id="us-yields"></div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><div class="card-ttl">Asian Sovereign Yields</div></div>
+    <div id="asia-yields"></div>
+  </div>
+  <div class="add-box" onclick="openModal('yields')"><span class="add-icon">＋</span>Add tenor / country</div>
+</div>
+
+<!-- EQUITIES -->
+<div class="page" id="page-equities">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ttl">Global Indices</div>
+      <button class="icon-btn" onclick="doRefreshEquities(this)">↻</button>
+    </div>
+    <div id="idx-body"></div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><div class="card-ttl">ETFs & Watchlist</div></div>
+    <div id="etf-body"></div>
+  </div>
+  <div class="add-box" onclick="openModal('equities')"><span class="add-icon">＋</span>Add ticker</div>
+</div>
+
+<!-- COMMODITIES -->
+<div class="page" id="page-commodities">
+  <div class="sec-lbl">Commodities</div>
+  <div class="comm-grid" id="comm-grid"></div>
+  <div class="sec-lbl" style="margin-top:12px">Crypto</div>
+  <div class="comm-grid" id="crypto-grid"></div>
+  <div class="add-box" onclick="openModal('commodities')" style="margin-top:10px"><span class="add-icon">＋</span>Add asset</div>
+</div>
+
+<!-- NEWS -->
+<div class="page" id="page-news">
+  <div id="proxy-notice"></div>
+  <div class="news-tabs" id="news-tabs">
+    <button class="news-tab-btn active" data-feed="all">All</button>
+    <button class="news-tab-btn" data-feed="reuters">Reuters</button>
+    <button class="news-tab-btn" data-feed="mas">MAS</button>
+    <button class="news-tab-btn" data-feed="ft">FT</button>
+    <button class="news-tab-btn" data-feed="bloomberg">Bloomberg</button>
+  </div>
+  <div id="news-body">
+    <div class="news-spinner"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Fetching feeds…</span></div>
+  </div>
+  <div class="add-box" onclick="openModal('news')"><span class="add-icon">＋</span>Add topic / RSS feed</div>
+</div>
+
+<!-- PROFILES -->
+<div class="page" id="page-profile">
+  <div class="prof-detail" id="prof-detail">
+    <div class="pd-hd">
+      <div>
+        <div class="pd-name" id="pd-name">—</div>
+        <div class="pd-type" id="pd-type"></div>
+      </div>
+      <button class="pd-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="pd-body" id="pd-body"></div>
+  </div>
+  <div class="profile-grid" id="profile-grid"></div>
+  <div class="add-box" onclick="openModal('profile')"><span class="add-icon">＋</span>Add institution</div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-title">Add Item</div>
+    <input class="modal-input" id="modal-inp" placeholder="">
+    <div class="tip" id="modal-tip"></div>
+    <div class="modal-row" style="margin-top:12px">
+      <button class="mbtn" onclick="submitModal()">Add</button>
+      <button class="mbtn sec" onclick="closeOverlay()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONFIG — edit PROXY_BASE after deploying Worker
+═══════════════════════════════════════════════ */
+
+// After you deploy your Cloudflare Worker, paste its URL here:
+// e.g. "https://rm-proxy.YOUR-SUBDOMAIN.workers.dev"
+// Leave as empty string to use direct fetch (works for CORS-safe APIs only)
+const PROXY_BASE = "";   // ← PASTE YOUR WORKER URL HERE
+
+function proxy(url) {
+  if (!PROXY_BASE) return url;          // direct if no proxy set
+  return `${PROXY_BASE}/proxy?url=${encodeURIComponent(url)}`;
+}
+function rssProxy(url) {
+  if (!PROXY_BASE) return null;         // RSS only works with proxy
+  return `${PROXY_BASE}/rss?url=${encodeURIComponent(url)}`;
+}
+
+const HAS_PROXY = () => PROXY_BASE.length > 0;
+
+/* ═══════════════════════════════════════════════
+   RSS FEED CONFIG
+═══════════════════════════════════════════════ */
+const RSS_FEEDS = {
+  reuters:   { label:'Reuters', url:'https://feeds.reuters.com/reuters/businessNews', tag:'t-mkt', tagLabel:'Markets' },
+  mas:       { label:'MAS',     url:'https://www.mas.gov.sg/rss/news',               tag:'t-reg', tagLabel:'Regulatory' },
+  ft:        { label:'FT',      url:'https://www.ft.com/markets?format=rss',          tag:'t-fi',  tagLabel:'FT Markets' },
+  bloomberg: { label:'Bloomberg',url:'https://feeds.bloomberg.com/markets/news.rss',  tag:'t-fi',  tagLabel:'Bloomberg' },
+};
+
+/* ═══════════════════════════════════════════════
+   INSTITUTIONS
+═══════════════════════════════════════════════ */
+const INSTITUTIONS = [
+  { name:'DBS',                   type:'Local Bank · SG',        region:'sg' },
+  { name:'OCBC / Bank of Singapore', type:'Local Bank · SG',     region:'sg' },
+  { name:'UOB / UOB Kay Hian',    type:'Local Bank · SG',        region:'sg' },
+  { name:'Maybank',               type:'Local Bank · MY',        region:'my' },
+  { name:'CIMB',                  type:'Local Bank · MY',        region:'my' },
+  { name:'JPMorgan',              type:'Global Bank · US',       region:'us' },
+  { name:'Citi Private Bank',     type:'Global Bank · US',       region:'us' },
+  { name:'Morgan Stanley PB',     type:'Global Bank · US',       region:'us' },
+  { name:'Bank of America',       type:'Global Bank · US',       region:'us' },
+  { name:'Goldman Sachs PB',      type:'Global Bank · US',       region:'us' },
+  { name:'HSBC',                  type:'Global Bank · UK',       region:'uk' },
+  { name:'Standard Chartered',    type:'Global Bank · UK',       region:'uk' },
+  { name:'Barclays',              type:'Global Bank · UK',       region:'uk' },
+  { name:'BNP Paribas',           type:'Global Bank · EU',       region:'eu' },
+  { name:'Société Générale',      type:'Global Bank · EU',       region:'eu' },
+  { name:'UBS',                   type:'Global Bank · CH',       region:'ch' },
+  { name:'Deutsche Bank',         type:'Global Bank · DE',       region:'eu' },
+  { name:'Julius Baer',           type:'Private Bank · CH',      region:'ch' },
+  { name:'Union Bancaire Privée', type:'Private Bank · CH',      region:'ch' },
+  { name:'Nomura',                type:'Global Bank · JP',       region:'jp' },
+  { name:'LGT',                   type:'Private Bank · LI',      region:'ch' },
+  { name:'EPF Malaysia',          type:'Sovereign Fund · MY',    region:'my' },
+  { name:'PNB Malaysia',          type:'Sovereign Fund · MY',    region:'my' },
+];
+
+/* Profile blurbs — static facts, no API needed */
+const PROFILES = {
+  'DBS': `DBS is Southeast Asia's largest bank by assets (~S$750bn), anchored in Singapore with significant private banking operations via DBS Private Bank. The wealth arm manages over S$370bn AUM with strong UHNW penetration across Singapore, Hong Kong, Indonesia, and India. DBS targets the inter-generational wealth transfer theme and has been aggressively hiring RMs from foreign banks. Key products include structured products, alternative investments, and family office solutions. Recent strategic moves include expansion of its digital wealth platform Nav Planner and growing its presence in the family office segment, benefiting from Singapore's rising status as a wealth hub.`,
+  'OCBC / Bank of Singapore': `Bank of Singapore (BoS), OCBC's private banking arm, is one of Asia's fastest-growing private banks with AUM exceeding US$130bn. It operates primarily from Singapore and Hong Kong, with representative offices across Indonesia, Malaysia, UAE, and Europe. BoS has distinguished itself by its open-architecture product shelf and strong focus on Asian UHNW clients. OCBC's integrated model allows seamless referrals between retail, commercial, and private banking. Recent hires from Credit Suisse's collapse bolstered its team significantly. BoS is particularly strong in fixed income, philanthropy advisory, and next-gen client engagement.`,
+  'UOB / UOB Kay Hian': `UOB Private Bank manages ~S$50bn AUM, focusing on the mass-affluent to UHNW segment across Singapore, Malaysia, Thailand, Indonesia, and Greater China. UOB Kay Hian, its brokerage arm, provides equity execution and research particularly valued by trading-oriented HNW clients. UOB's private bank differentiates through deep ASEAN connectivity and SME owner relationships. The bank has been investing in digital advisory tools and ESG-themed portfolios. Its strength in Thailand and Malaysia gives it an edge for cross-border wealth structuring needs.`,
+  'Maybank': `Maybank Islamic and Maybank Private Wealth serve Malaysia's largest domestic UHNW base. The group has ~RM940bn in total assets and a private banking franchise growing across Singapore, Hong Kong, and key ASEAN markets. Maybank's edge is deep government-linked corporation (GLC) and Bumiputera institutional relationships, making it essential for Malaysian client coverage. Strong in sukuk and Islamic structured products. The group's investment bank Maybank IB provides deal flow referrals. Increasing focus on next-gen wealth transfer and philanthropy in the Islamic finance context.`,
+  'CIMB': `CIMB Private Banking operates across Malaysia, Singapore, Indonesia, Thailand, and Cambodia, serving as a bridge between institutional and private wealth in ASEAN. Total group assets exceed RM800bn. The private bank benefits from CIMB's strong investment banking franchise providing IPO allocations and structured product flow. CIMB Niaga in Indonesia gives it unmatched local penetration in the world's 4th largest country. Key client segments include Indonesian conglomerates, Malaysian family businesses, and Thai business owners. Growing focus on digital platforms for the mass-affluent.`,
+  'JPMorgan': `JPMorgan Private Bank manages over US$2 trillion globally and has a significant Asia presence anchored in Singapore and Hong Kong. The Asia team focuses exclusively on UHNW and family offices (typically US$25mn+ minimum). JPM's edge is access to its global investment banking platform — deal flow, IPO allocations, lending, and alternative investments are key differentiators. In SEA, it is particularly strong with Indonesian and Filipino conglomerate families. Recent expansion includes a dedicated family office advisory team in Singapore and growing impact/alternatives capabilities.`,
+  'Citi Private Bank': `Citi Private Bank serves UHNW clients (US$25mn+) globally with a significant Asia book managed from Singapore and Hong Kong. Citi's key differentiator is its global network — clients with cross-border business interests in the US, Europe, and LatAm find Citi's connectivity valuable. In SEA, Citi PB is strong with Thai royalty and business families, Philippine conglomerates, and Indonesian tycoons. The bank offers world-class capital markets access, art advisory, and sports finance. Citi PB's recent strategy focuses on Family Office clients and the next generation.`,
+  'Morgan Stanley PB': `Morgan Stanley Private Wealth Management operates in Asia through Singapore and Hong Kong, managing a significant book of UHNW assets. Its global platform — particularly strong in US equity markets, hedge fund access, and alternatives — is the key draw for Asian clients seeking US market exposure. Strong relationships with tech entrepreneurs and pre-IPO clients. In SEA, Morgan Stanley PB has growing coverage of Singapore family offices and Indonesian businesspeople. The firm's research capabilities and investment banking access (especially for tech and healthcare IPOs) are major differentiators.`,
+  'Bank of America': `Bank of America Private Bank (formerly US Trust) operates in Asia via Singapore and Hong Kong, with a more selective UHNW focus (US$10mn+). BoA Merrill Lynch's investment banking and capital markets platform underpins the private banking offering. In Asia, BoA PB has strong relationships with clients who have US-listed assets or business interests. The firm is particularly active in lending solutions, structured credit, and equity-linked products. Growing its family office practice in Singapore. Not as large as JPM or UBS in Asia, but punches above its weight with select ultra-HNW relationships.`,
+  'Goldman Sachs PB': `Goldman Sachs Private Wealth Management serves exclusively UHNW clients (US$50mn+ minimum) from Singapore and Hong Kong in Asia. Goldman's differentiation is unmatched investment banking access — IPO allocations, co-investments, and proprietary alternative investments. The firm's Alternatives platform (private equity, hedge funds, real estate) is a major client draw. In SEA, Goldman serves Indonesian, Thai, and Philippine conglomerate families as well as tech founders. Goldman Sachs Family Office is a discrete, high-touch offering for the ultra-segment. Client advisory is highly personalised and relationship-intensive.`,
+  'HSBC': `HSBC Global Private Banking manages ~US$600bn globally with Asia being its largest region. Singapore and Hong Kong are the twin hubs, with strong reach into Malaysia, Indonesia, and India. HSBC's key advantage is its connectivity between private banking, commercial banking, and investment banking — critical for entrepreneur clients. HSBC Premier and Jade serve the mass-affluent and affluent segments below the private banking threshold. Recent strategy includes growing its Asia family office platform and expanding alternatives. HSBC is particularly strong with Southeast Asian Chinese business families.`,
+  'Standard Chartered': `Standard Chartered Private Bank (~US$80bn AUM) is uniquely positioned as the only global bank with deep presence across Africa, Middle East, and Asia simultaneously. Its Singapore hub serves SEA UHNW clients, particularly strong in Indonesia, Malaysia, and India. StanChart's edge is cross-border connectivity for clients with emerging market business interests. Products include sharia-compliant offerings, trade finance-linked wealth solutions, and philanthropy advisory. Recent investment in digital wealth platform (Wealth$ense) and growing family office coverage in Singapore. Known for competitive fixed income and structured product pricing.`,
+  'Barclays': `Barclays Private Bank manages ~£55bn globally with its Asia presence based in Singapore and Hong Kong. Barclays targets UHNW and HNW clients with a strong focus on UK-Asia corridors, particularly popular with Southeast Asian clients with UK properties, education, or business interests. Products include structured lending, portfolio management, and art advisory. Barclays has been selective in Asia, focusing on quality over quantity of client relationships. Strong in alternative investments and private markets access. The bank's investment banking arm provides differentiated deal flow and capital raising capabilities.`,
+  'BNP Paribas': `BNP Paribas Wealth Management manages ~€420bn globally and is one of the largest private banks in Asia by AUM, with hubs in Singapore and Hong Kong. Strong in French and European client coverage as well as Asian UHNW across Indonesia, Thailand, and Greater China. BNP's differentiation is its structured products capability — one of the best derivatives desks for wealth management in Asia. The bank also offers strong real estate investment solutions and ESG-themed portfolios. Recent integration of Exane for equity research improves client offering. Family office and next-gen client engagement are growth priorities.`,
+  'Société Générale': `SocGen Private Banking manages ~€130bn globally with a significant Asia book in Singapore and Hong Kong. SocGen's key differentiator is its world-class structured products and derivatives capability, making it popular with sophisticated UHNW investors seeking capital-protected or leveraged solutions. In Asia, SocGen focuses on French expat community as well as local UHNW in Singapore and Hong Kong. Growing its family office client base. SocGen has faced headwinds from global restructuring but continues to invest in its Asia private banking franchise, particularly in alternatives and ESG.`,
+  'UBS': `UBS Global Wealth Management is the world's largest private bank with ~US$3.5 trillion in invested assets. Asia Pacific (~US$500bn+ AUM) is its fastest-growing region, with Singapore and Hong Kong as twin hubs. UBS serves the full UHNW and family office spectrum in SEA, with particularly deep relationships among Indonesian tycoons, Thai royalty, and Singapore family offices. Following the Credit Suisse acquisition, UBS inherited significant additional AUM and talent in Asia. Key differentiators: alternatives access, sustainable investing, estate planning, and global connectivity. The CS integration is the dominant strategic theme.`,
+  'Deutsche Bank': `Deutsche Bank Wealth Management (~€250bn AUM globally) operates in Asia through Singapore and Hong Kong, with a focus on UHNW clients with European and Asian business interests. Deutsche's strength is in FX derivatives, structured credit, and cross-border lending — popular with sophisticated investors. In SEA, Deutsche serves German business families in the region and Southeast Asian clients with European interests. Recent restructuring has made the private bank leaner but more focused. Strong in customised portfolio solutions and impact investing. The investment bank platform remains a differentiator for deal access.`,
+  'Julius Baer': `Julius Baer manages CHF 460bn+ globally and is one of the most Asia-committed pure-play private banks with ~CHF 100bn+ in Asia AUM. Singapore and Hong Kong are major hubs, with growing offices across SEA. Julius Baer has been aggressive in hiring RMs from bulge bracket banks. Key client base: Indonesian and Philippine conglomerate families, Thai business owners, and Singapore family offices. Differentiators include open architecture, strong fixed income, and customised mandates. Despite recent challenges (Signa exposure), Baer's Asia franchise remains robust. The bank targets the US$2mn+ segment.`,
+  'Union Bancaire Privée': `UBP manages CHF 140bn+ globally and has built a strong Asia franchise from its Singapore and Hong Kong bases. UBP targets the UHNW segment with a boutique, high-touch approach. Key differentiators are alternatives (hedge funds, private equity), systematic strategies, and customised mandates. UBP acquired Coutts International's non-UK business in 2016, which significantly bolstered its Asia book. Strong with European expats in Asia and Southeast Asian UHNW families. UBP's independence as a family-owned bank (de Picciotto family) is a marketing point for client confidentiality.`,
+  'Nomura': `Nomura Private Banking has significant presence in Singapore and Hong Kong, serving as a bridge for Japanese UHNW clients investing in Asia and Asian clients wanting Japan exposure. Nomura's investment banking franchise in Japan — particularly M&A, IPOs, and structured products — is a strong referral source. In SEA, Nomura focuses on clients with Japan-related business interests and Southeast Asian ultra-HNW. The bank has been growing its alternatives platform and family office advisory. Research quality on Japanese equities and Asian markets is a key client draw. A niche but valuable coverage for Japan-connected wealth.`,
+  'LGT': `LGT Private Banking, owned by the Princely House of Liechtenstein (CHF 350bn+ AUM), has built a strong Asia presence from Singapore and Hong Kong. LGT's unique proposition is its founding family ownership — aligned interests with long-term, sustainable wealth management. Strong in impact investing, philanthropy, and ESG across all asset classes. LGT acquired ABN AMRO's private banking operations in Asia (2019), significantly expanding its AUM and team. Client base spans UHNW across SEA, with growing family office practice. Differentiators include strong alternatives access and multi-generational wealth planning.`,
+  'EPF Malaysia': `The Employees Provident Fund (EPF) is Malaysia's mandatory national pension scheme with AUM exceeding RM1.1 trillion (~US$250bn), making it one of the largest pension funds in Asia. EPF manages contributions from ~15mn members and invests across domestic and global equities, fixed income, real estate, and private markets. Internationally, EPF has offices in London, New York, Singapore, and Jakarta. Key strategic priorities include diversification into global markets (40%+ overseas), private equity, infrastructure, and sustainable investments. EPF's size makes it a key counterparty for large private banks on block trades, bonds, and fund launches.`,
+  'PNB Malaysia': `Permodalan Nasional Berhad (PNB) is Malaysia's national investment institution with AUM exceeding RM350bn, managing unit trusts on behalf of Bumiputera investors. PNB is one of Malaysia's largest shareholders in blue-chip companies including Maybank, Sime Darby, and UMW. Internationally, PNB has made significant real estate investments including the PNB 118 tower in Kuala Lumpur and global real estate assets. Investment strategy encompasses listed equities, private equity, real estate, and fixed income. PNB is a significant counterparty for capital markets transactions and is increasingly allocating to global alternatives.`,
+};
+
+/* ═══════════════════════════════════════════════
+   CLOCK
+═══════════════════════════════════════════════ */
+function updateClock() {
+  const now = new Date();
+  const sgt = new Date(now.toLocaleString('en-US',{timeZone:'Asia/Singapore'}));
+  document.getElementById('clock').textContent =
+    sgt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const opts = {weekday:'short',day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Singapore'};
+  document.getElementById('clock-date').textContent =
+    now.toLocaleDateString('en-SG', opts) + ' SGT';
+}
+setInterval(updateClock,1000);
+updateClock();
+
+/* ═══════════════════════════════════════════════
+   MARKET HOURS
+═══════════════════════════════════════════════ */
+function renderMarketHours() {
+  const now = new Date();
+  const utcH = now.getUTCHours(), utcM = now.getUTCMinutes();
+  const t = utcH*60 + utcM;
+  const mkts = [
+    {n:'SGX',  o:1*60,    c:9*60+30},
+    {n:'HKEx', o:1*60+30, c:8*60},
+    {n:'Nikkei',o:0,      c:6*60},
+    {n:'BSE',  o:3*60+45, c:10*60},
+    {n:'LSE',  o:8*60,    c:16*60+30},
+    {n:'NYSE', o:14*60+30,c:21*60},
+    {n:'CME',  o:22*60,   c:21*60+55},
+  ];
+  const el = document.getElementById('mkt-strip');
+  el.innerHTML = mkts.map(m => {
+    const open = t >= m.o && t < m.c;
+    const pre  = !open && t >= m.o-60 && t < m.o;
+    const cls  = open ? 'm-open' : pre ? 'm-pre' : 'm-closed';
+    const lbl  = open ? 'Open' : pre ? 'Pre' : 'Closed';
+    return `<div class="mkt-pill"><div class="mdot ${cls}"></div>${m.n} <span style="color:${open?'var(--up)':pre?'var(--gold)':'var(--text3)'}">${lbl}</span></div>`;
+  }).join('');
+}
+renderMarketHours();
+setInterval(renderMarketHours, 60000);
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+const lazyLoaded = {};
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById('page-'+tab).classList.add('active');
+    if (!lazyLoaded[tab]) {
+      lazyLoaded[tab] = true;
+      const loaders = {
+        fx:          loadFX,
+        yields:      loadYields,
+        equities:    loadEquities,
+        commodities: loadCommodities,
+        news:        loadNews,
+        profile:     () => { renderProfileGrid(); renderProfileBlurb(); },
+      };
+      if (loaders[tab]) loaders[tab]();
+    }
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════ */
+function pct(p) {
+  if (p == null || isNaN(p)) return '<span class="flat">—</span>';
+  const c = p >= 0 ? 'up' : 'down';
+  return `<span class="${c}">${p>=0?'+':''}${p.toFixed(2)}%</span>`;
+}
+function chgPct(chg, prev) {
+  if (!chg || !prev) return '<span class="flat">—</span>';
+  return pct((chg/prev)*100);
+}
+function numFmt(n, d=2) {
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+function shimRow() {
+  return `<div class="row"><div class="rl"><div class="shim" style="width:70px"></div></div><div class="rr"><div class="shim" style="width:60px;float:right"></div></div></div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   YAHOO FINANCE via proxy
+═══════════════════════════════════════════════ */
+async function yQuote(symbol) {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=2d`;
+    const res = await fetch(proxy(url));
+    const j   = await res.json();
+    const meta = j.chart.result[0].meta;
+    const price= meta.regularMarketPrice;
+    const prev = meta.chartPreviousClose || meta.previousClose;
+    return { price, prev, chg: price-prev, pct: ((price-prev)/prev)*100, ccy: meta.currency };
+  } catch { return null; }
+}
+
+/* ═══════════════════════════════════════════════
+   SUMMARY TAB
+═══════════════════════════════════════════════ */
+let sumItems = [
+  {id:'sp500',  lbl:'S&P 500',   sub:'US Large Cap',  sym:'^GSPC',   dec:0},
+  {id:'usdsgd', lbl:'USD/SGD',   sub:'FX',            sym:'USDSGD=X',dec:4},
+  {id:'us10y',  lbl:'US 10Y',    sub:'Treasury Yield', sym:'^TNX',   dec:3, suffix:'%'},
+  {id:'oil',    lbl:'Brent',     sub:'Crude $/bbl',   sym:'BZ=F',    dec:2},
+  {id:'gold',   lbl:'Gold',      sub:'$/oz',          sym:'GC=F',    dec:2},
+  {id:'btc',    lbl:'Bitcoin',   sub:'Crypto',        sym:'BTC-USD', dec:0},
+];
+const sumCache = {};
+
+function renderSumGrid() {
+  document.getElementById('sum-grid').innerHTML = sumItems.map((item,i)=>{
+    const d = sumCache[item.id];
+    const priceStr = d ? numFmt(d.price, item.dec) + (item.suffix||'') : `<span class="shim" style="width:70px;height:16px"></span>`;
+    const chgStr   = d ? pct(d.pct) : '';
+    return `<div class="sum-tile" draggable="true" data-idx="${i}" data-ctx="sum"
+      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event,'sumItems')" ondragleave="dragLeave(event)">
+      <div class="st-lbl">${item.lbl}</div>
+      <div class="st-price">${priceStr}</div>
+      <div class="st-chg">${chgStr}</div>
+    </div>`;
+  }).join('');
+}
+
+async function loadSummary() {
+  const dot = document.getElementById('sum-dot');
+  const txt = document.getElementById('sum-txt');
+  dot.className = 'sdot loading pulse';
+  txt.textContent = 'Fetching market data…';
+  renderSumGrid();
+
+  await Promise.all(sumItems.map(async item => {
+    const d = await yQuote(item.sym);
+    if (d) sumCache[item.id] = d;
+    renderSumGrid();
+  }));
+
+  const now = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Singapore'});
+  dot.className = 'sdot pulse';
+  txt.textContent = `Live · refreshed ${now} SGT · auto-updates every 60s`;
+}
+loadSummary();
+setInterval(loadSummary, 60000);
+
+/* ═══════════════════════════════════════════════
+   FX TAB
+═══════════════════════════════════════════════ */
+let fxItems = [
+  {pair:'EUR/USD', sym:'EURUSD=X', dec:4},
+  {pair:'GBP/USD', sym:'GBPUSD=X', dec:4},
+  {pair:'USD/JPY', sym:'JPY=X',    dec:2},
+  {pair:'USD/MYR', sym:'MYR=X',    dec:4},
+  {pair:'USD/IDR', sym:'IDR=X',    dec:0},
+  {pair:'USD/THB', sym:'THB=X',    dec:3},
+  {pair:'USD/VND', sym:'VND=X',    dec:0},
+  {pair:'SGD/MYR', sym:'SGDMYR=X', dec:4},
+];
+const fxCache = {};
+
+async function loadFX() {
+  document.getElementById('fx-body').innerHTML = Array(fxItems.length).fill(shimRow()).join('');
+  await Promise.all(fxItems.map(async (item,i)=>{
+    const d = await yQuote(item.sym);
+    if (d) fxCache[item.pair] = d;
+  }));
+  renderFX();
+}
+
+function renderFX() {
+  document.getElementById('fx-body').innerHTML = fxItems.map((item,i)=>{
+    const d = fxCache[item.pair];
+    const rate = d ? numFmt(d.price, item.dec) : '—';
+    const p    = d ? pct(d.pct) : '<span class="flat">—</span>';
+    return `<div class="fx-row" draggable="true" data-idx="${i}" data-ctx="fx"
+      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event,'fxItems')" ondragleave="dragLeave(event)">
+      <div class="fx-pair">${item.pair}</div>
+      <div class="fx-rate">${rate}</div>
+      <div class="fx-pct">${p}</div>
+    </div>`;
+  }).join('');
+}
+
+async function doRefreshFX(btn) {
+  btn.classList.add('spin');
+  await loadFX();
+  btn.classList.remove('spin');
+}
+
+/* ═══════════════════════════════════════════════
+   YIELDS TAB
+═══════════════════════════════════════════════ */
+const US_TENORS = [
+  {lbl:'2Y',  sym:'%5EIRX'},
+  {lbl:'5Y',  sym:'%5EFVX'},
+  {lbl:'10Y', sym:'%5ETNX'},
+  {lbl:'30Y', sym:'%5ETYX'},
+];
+const ASIA_YIELDS = [
+  {lbl:'SG 10Y', sym:'MASB10Y.SI'},
+  {lbl:'MY 10Y', sym:'MY10YT=RR'},
+  {lbl:'JP 10Y', sym:'JP10YT=RR'},
+  {lbl:'CN 10Y', sym:'CN10YT=RR'},
+  {lbl:'IN 10Y', sym:'IN10YT=RR'},
+];
+const ydCache = {};
+
+async function loadYields() {
+  renderFOMC();
+  document.getElementById('us-yields').innerHTML = US_TENORS.map(()=>`<div class="yt"><div class="yt-tenor">—</div><div class="shim" style="width:40px;height:12px;margin:0 auto 4px"></div></div>`).join('');
+  document.getElementById('asia-yields').innerHTML = Array(ASIA_YIELDS.length).fill(shimRow()).join('');
+
+  await Promise.all([
+    ...US_TENORS.map(async t=>{
+      const sym = decodeURIComponent(t.sym);
+      const d = await yQuote(sym);
+      if (d) ydCache[t.lbl] = d;
+    }),
+    ...ASIA_YIELDS.map(async t=>{
+      const d = await yQuote(t.sym);
+      if (d) ydCache[t.lbl] = d;
+    }),
+  ]);
+  renderYields();
+}
+
+function renderYields() {
+  document.getElementById('us-yields').innerHTML = US_TENORS.map(t=>{
+    const d = ydCache[t.lbl];
+    const rate = d ? d.price.toFixed(3)+'%' : '—';
+    const c    = d ? pct(d.pct) : '';
+    return `<div class="yt"><div class="yt-tenor">${t.lbl}</div><div class="yt-rate">${rate}</div><div class="yt-chg">${c}</div></div>`;
+  }).join('');
+
+  document.getElementById('asia-yields').innerHTML = ASIA_YIELDS.map((t,i)=>{
+    const d = ydCache[t.lbl];
+    const rate = d ? d.price.toFixed(3)+'%' : '—';
+    const c    = d ? pct(d.pct) : '';
+    return `<div class="row" draggable="true" data-idx="${i}" data-ctx="ay"
+      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event,'ASIA_YIELDS')" ondragleave="dragLeave(event)">
+      <div class="rl"><div class="rl-name">${t.lbl}</div></div>
+      <div class="rr"><div class="rr-price">${rate}</div><div class="rr-chg">${c}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderFOMC() {
+  const dates = [
+    '2025-03-19','2025-05-07','2025-06-18','2025-07-30','2025-09-17','2025-10-29','2025-12-10',
+    '2026-01-28','2026-03-18','2026-04-29','2026-06-17','2026-07-29','2026-09-16','2026-10-28','2026-12-09',
+  ].map(s=>new Date(s));
+  const now  = new Date();
+  const next = dates.find(d=>d>now);
+  const days = next ? Math.ceil((next-now)/864e5) : '?';
+  const prev = dates.filter(d=>d<=now).pop();
+
+  document.getElementById('fomc-body').innerHTML = `
+    <div class="fomc-date">${next ? next.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'}) : 'TBD'}</div>
+    <div class="fomc-sub">In <b>${days} days</b> &nbsp;·&nbsp; Current Fed Funds: <b>4.25 – 4.50%</b></div>
+    <div class="prob-row">
+      <div class="prob-lbl"><span>Hold (4.25–4.50%)</span><span id="p-hold">~62%</span></div>
+      <div class="bar-track"><div class="bar-fill b-hold" id="b-hold" style="width:62%"></div></div>
+    </div>
+    <div class="prob-row">
+      <div class="prob-lbl"><span>Cut 25bp (4.00–4.25%)</span><span id="p-cut">~35%</span></div>
+      <div class="bar-track"><div class="bar-fill b-cut" id="b-cut" style="width:35%"></div></div>
+    </div>
+    <div class="prob-row">
+      <div class="prob-lbl"><span>Hike 25bp (4.50–4.75%)</span><span id="p-hike">~3%</span></div>
+      <div class="bar-track"><div class="bar-fill b-hike" id="b-hike" style="width:3%"></div></div>
+    </div>
+    <div class="prob-note">Probabilities implied from Fed Funds futures · auto-updated</div>`;
+  loadFedProbs();
+}
+
+async function loadFedProbs() {
+  // Use nearest-month Fed Funds future (ZQ) via Yahoo
+  const contracts = ['ZQH25.CBT','ZQM25.CBT','ZQU25.CBT'];
+  for (const sym of contracts) {
+    try {
+      const d = await yQuote(sym);
+      if (d && d.price > 90) {
+        const impliedRate = 100 - d.price;
+        const current = 4.375;
+        const diff = current - impliedRate;
+        const cutP  = Math.min(95, Math.max(5, Math.round((diff/0.25)*100)));
+        const hikeP = Math.max(0, Math.round((-diff/0.25)*50));
+        const holdP = Math.max(5, 100 - cutP - hikeP);
+        document.getElementById('p-hold').textContent = holdP+'%';
+        document.getElementById('p-cut').textContent  = cutP+'%';
+        document.getElementById('p-hike').textContent = hikeP+'%';
+        document.getElementById('b-hold').style.width = holdP+'%';
+        document.getElementById('b-cut').style.width  = cutP+'%';
+        document.getElementById('b-hike').style.width = hikeP+'%';
+        break;
+      }
+    } catch {}
+  }
+}
+
+async function doRefreshYields(btn) {
+  btn.classList.add('spin');
+  await loadYields();
+  btn.classList.remove('spin');
+}
+
+/* ═══════════════════════════════════════════════
+   EQUITIES TAB
+═══════════════════════════════════════════════ */
+let idxItems = [
+  {lbl:'S&P 500',      sym:'^GSPC',  dec:0},
+  {lbl:'NASDAQ',       sym:'^IXIC',  dec:0},
+  {lbl:'Hang Seng',    sym:'^HSI',   dec:0},
+  {lbl:'Straits Times',sym:'^STI',   dec:2},
+  {lbl:'KLCI',         sym:'^KLSE',  dec:2},
+  {lbl:'IDX Composite',sym:'^JKSE',  dec:0},
+  {lbl:'SET',          sym:'^SET.BK',dec:2},
+];
+let etfItems = [
+  {lbl:'EQQQ',         sym:'EQQQ.L', dec:2},
+  {lbl:'IWDA',         sym:'IWDA.L', dec:2},
+  {lbl:'NVDA',         sym:'NVDA',   dec:2},
+];
+const eqCache = {};
+
+async function loadEquities() {
+  document.getElementById('idx-body').innerHTML = Array(idxItems.length).fill(shimRow()).join('');
+  document.getElementById('etf-body').innerHTML = Array(etfItems.length).fill(shimRow()).join('');
+
+  await Promise.all([...idxItems,...etfItems].map(async item=>{
+    const d = await yQuote(item.sym);
+    if (d) eqCache[item.sym] = d;
+  }));
+  renderEquities();
+}
+
+function renderEquities() {
+  const makeRows = (items, ctx) => items.map((item,i)=>{
+    const d = eqCache[item.sym];
+    const price = d ? numFmt(d.price, item.dec) : '—';
+    const c     = d ? pct(d.pct) : '<span class="flat">—</span>';
+    return `<div class="row" draggable="true" data-idx="${i}" data-ctx="${ctx}"
+      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event,'${ctx}')" ondragleave="dragLeave(event)">
+      <div class="rl"><div class="rl-name">${item.lbl}</div><div class="rl-sub">${item.sym}</div></div>
+      <div class="rr"><div class="rr-price">${price}</div><div class="rr-chg">${c}</div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('idx-body').innerHTML = makeRows(idxItems,'idxItems');
+  document.getElementById('etf-body').innerHTML = makeRows(etfItems,'etfItems');
+}
+
+async function doRefreshEquities(btn) {
+  btn.classList.add('spin');
+  await loadEquities();
+  btn.classList.remove('spin');
+}
+
+/* ═══════════════════════════════════════════════
+   COMMODITIES TAB
+═══════════════════════════════════════════════ */
+const COMM = [
+  {id:'oil',    lbl:'Brent',  sym:'BZ=F',   icon:'🛢', dec:2},
+  {id:'gold',   lbl:'Gold',   sym:'GC=F',   icon:'🥇', dec:2},
+  {id:'silver', lbl:'Silver', sym:'SI=F',   icon:'🥈', dec:3},
+];
+const CRYPTO = [
+  {id:'btc', lbl:'Bitcoin',  sym:'BTC-USD', icon:'₿',  dec:0},
+  {id:'eth', lbl:'Ethereum', sym:'ETH-USD', icon:'Ξ',  dec:2},
+  {id:'bnb', lbl:'BNB',      sym:'BNB-USD', icon:'🔶', dec:2},
+  {id:'sol', lbl:'Solana',   sym:'SOL-USD', icon:'◎',  dec:2},
+  {id:'stx', lbl:'Stacks',   sym:'STX-USD', icon:'⚡', dec:4},
+];
+const commCache = {};
+
+async function loadCommodities() {
+  document.getElementById('comm-grid').innerHTML   = COMM.map(()=>  `<div class="comm-tile"><div class="ct-icon">—</div><div class="shim" style="width:40px;height:10px;margin:0 auto 6px"></div><div class="shim" style="width:55px;height:12px;margin:0 auto"></div></div>`).join('');
+  document.getElementById('crypto-grid').innerHTML = CRYPTO.map(()=>`<div class="comm-tile"><div class="ct-icon">—</div><div class="shim" style="width:40px;height:10px;margin:0 auto 6px"></div><div class="shim" style="width:55px;height:12px;margin:0 auto"></div></div>`).join('');
+
+  await Promise.all([...COMM,...CRYPTO].map(async item=>{
+    const d = await yQuote(item.sym);
+    if (d) commCache[item.id] = d;
+  }));
+  renderComm();
+}
+
+function renderComm() {
+  const tile = (item) => {
+    const d = commCache[item.id];
+    const price = d ? numFmt(d.price, item.dec) : '—';
+    const c     = d ? pct(d.pct) : '';
+    return `<div class="comm-tile" draggable="true">
+      <span class="ct-icon">${item.icon}</span>
+      <div class="ct-lbl">${item.lbl}</div>
+      <div class="ct-price">${price}</div>
+      <div class="ct-chg">${c}</div>
+    </div>`;
+  };
+  document.getElementById('comm-grid').innerHTML   = COMM.map(tile).join('');
+  document.getElementById('crypto-grid').innerHTML = CRYPTO.map(tile).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   NEWS TAB — RSS feeds via Cloudflare Worker /rss
+═══════════════════════════════════════════════ */
+let newsCache = {};
+let activeNewsFeed = 'all';
+
+async function loadNews() {
+  // Show setup notice if no proxy configured
+  if (!HAS_PROXY()) {
+    document.getElementById('proxy-notice').innerHTML = `
+      <div class="setup-banner">
+        <b>⚠ Proxy not configured</b><br>
+        RSS news requires your Cloudflare Worker. Set <code>PROXY_BASE</code> in the HTML file to your Worker URL.<br>
+        <a href="#" onclick="showSetupHelp()">View setup guide ↗</a>
+      </div>`;
+    document.getElementById('news-body').innerHTML = renderStaticNews();
+    return;
+  }
+  document.getElementById('proxy-notice').innerHTML = '';
+
+  document.getElementById('news-body').innerHTML =
+    `<div class="news-spinner"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Fetching feeds…</span></div>`;
+
+  await Promise.all(Object.entries(RSS_FEEDS).map(async ([key, feed]) => {
+    const url = rssProxy(feed.url);
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      newsCache[key] = (data.items || []).slice(0, 8).map(item => ({...item, _feed: key, _feedMeta: feed}));
+    } catch { newsCache[key] = []; }
+  }));
+
+  renderNews();
+  // Setup news sub-tabs
+  document.querySelectorAll('.news-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.news-tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      activeNewsFeed = btn.dataset.feed;
+      renderNews();
+    });
+  });
+}
+
+function renderNews() {
+  let items = [];
+  if (activeNewsFeed === 'all') {
+    items = Object.values(newsCache).flat();
+  } else {
+    items = newsCache[activeNewsFeed] || [];
+  }
+  if (!items.length) {
+    document.getElementById('news-body').innerHTML =
+      `<div style="padding:20px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px">No items found</div>`;
+    return;
+  }
+  document.getElementById('news-body').innerHTML = items.map((item,i) => {
+    const feed = item._feedMeta;
+    const time  = item.pubDate ? new Date(item.pubDate).toLocaleString('en-SG',{timeZone:'Asia/Singapore',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="news-item" draggable="true" data-idx="${i}" data-ctx="news"
+      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event,'newsCache')" ondragleave="dragLeave(event)">
+      <span class="n-tag ${feed.tag}">${feed.tagLabel}</span>
+      <div class="n-src">${feed.label}</div>
+      <div class="n-hl">${item.title || 'No title'}</div>
+      <div class="n-body">${(item.description||'').slice(0,140)}…</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+        <div class="n-time">${time}</div>
+        ${item.link ? `<a class="n-link" href="${item.link}" target="_blank">Read →</a>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderStaticNews() {
+  // Helpful fallback when proxy not set
+  const staticItems = [
+    {tag:'t-reg',tl:'Regulatory',src:'MAS Singapore',hl:'MAS Issues Circular on Family Office Regulations',body:'Monetary Authority of Singapore updates requirements for Variable Capital Companies and single-family offices.',link:'https://www.mas.gov.sg/news'},
+    {tag:'t-fi', tl:'Institution', src:'Reuters Finance',hl:'Asia Private Banking Sees Record AUM Inflows',body:'Southeast Asia wealth managers report strongest quarterly inflows since 2021 as regional UHNW wealth grows.',link:'https://reuters.com/business'},
+    {tag:'t-mkt',tl:'Markets',    src:'FT Markets',hl:'Asian Equities Rally on Fed Pause Expectations',body:'Regional indices up 0.8-1.2% as bond markets signal lower-for-longer US rates through H2 2025.',link:'https://www.ft.com/markets'},
+    {tag:'t-mkt',tl:'Markets',    src:'Bloomberg Asia',hl:'USD/SGD Holds Steady Ahead of Fed Decision',body:'Singapore dollar stable at 1.34 range as traders await FOMC minutes due Wednesday.',link:'https://bloomberg.com'},
+    {tag:'t-aum',tl:'AUM Flow',   src:'Reuters',hl:'Family Offices Triple Singapore Headcount',body:'MAS data shows 1,650+ single family offices now domiciled in Singapore, up sharply from 700 in 2021.',link:'https://reuters.com'},
+  ];
+  return staticItems.map(item=>`
+    <div class="news-item">
+      <span class="n-tag ${item.tag}">${item.tl}</span>
+      <div class="n-src">${item.src}</div>
+      <div class="n-hl">${item.hl}</div>
+      <div class="n-body">${item.body}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+        <div class="n-time">Sample · configure proxy for live news</div>
+        <a class="n-link" href="${item.link}" target="_blank">Read →</a>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   PROFILES TAB
+═══════════════════════════════════════════════ */
+function renderProfileGrid() {
+  document.getElementById('profile-grid').innerHTML = INSTITUTIONS.map((inst,i) =>
+    `<button class="prof-btn" data-idx="${i}" onclick="openProfile(${i})">
+      <div class="pb-name">${inst.name}</div>
+      <div class="pb-type">${inst.type}</div>
+    </button>`
+  ).join('');
+}
+
+function renderProfileBlurb() {
+  // nothing to do on load
+}
+
+async function openProfile(idx) {
+  const inst = INSTITUTIONS[idx];
+  document.querySelectorAll('.prof-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.prof-btn')[idx]?.classList.add('active');
+
+  const detail = document.getElementById('prof-detail');
+  document.getElementById('pd-name').textContent = inst.name;
+  document.getElementById('pd-type').textContent = inst.type;
+  detail.classList.add('open');
+
+  const cached = PROFILES[inst.name];
+  if (cached) {
+    document.getElementById('pd-body').innerHTML = cached.split('\n\n').map(p=>`<p style="margin-bottom:10px">${p}</p>`).join('');
+    detail.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
+
+  document.getElementById('pd-body').innerHTML = `<div class="pd-loading">No profile data available. Add an Anthropic API key to enable AI-generated profiles.</div>`;
+  detail.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function closeProfile() {
+  document.getElementById('prof-detail').classList.remove('open');
+  document.querySelectorAll('.prof-btn').forEach(b=>b.classList.remove('active'));
+}
+
+/* ═══════════════════════════════════════════════
+   DRAG AND DROP
+═══════════════════════════════════════════════ */
+let dragIdx = null, dragCtx = null;
+function dragStart(e) {
+  dragIdx = parseInt(e.currentTarget.dataset.idx);
+  dragCtx = e.currentTarget.dataset.ctx;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function drop(e, arrName) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const toIdx = parseInt(e.currentTarget.dataset.idx);
+  if (toIdx === dragIdx || toIdx == null || dragIdx == null) return;
+  const arrs = { sumItems, fxItems, idxItems, etfItems, ASIA_YIELDS };
+  const arr = arrs[arrName];
+  if (!arr) return;
+  const [moved] = arr.splice(dragIdx,1);
+  arr.splice(toIdx,0,moved);
+  if (arrName==='sumItems')    renderSumGrid();
+  if (arrName==='fxItems')     renderFX();
+  if (arrName==='idxItems' || arrName==='etfItems') renderEquities();
+  if (arrName==='ASIA_YIELDS') renderYields();
+  dragIdx = null;
+}
+
+/* ═══════════════════════════════════════════════
+   ADD MODAL
+═══════════════════════════════════════════════ */
+let currentCtx = null;
+const modalConfig = {
+  summary:     {title:'Add instrument',         placeholder:'e.g. MSFT, ^HSI, AAPL',  tip:'Uses Yahoo Finance symbol'},
+  fx:          {title:'Add currency pair',      placeholder:'e.g. EUR/SGD → EURSGD=X', tip:'Format: [PAIR]=X on Yahoo Finance'},
+  yields:      {title:'Add yield / tenor',      placeholder:'e.g. AU 10Y',             tip:'Country + tenor label'},
+  equities:    {title:'Add ticker to watchlist',placeholder:'e.g. TSLA, 0700.HK, SE',  tip:'Yahoo Finance ticker symbol'},
+  commodities: {title:'Add asset',              placeholder:'e.g. NG=F (Nat Gas)',     tip:'Yahoo Finance commodity symbol'},
+  news:        {title:'Add RSS feed / topic',   placeholder:'https://your-rss-feed.xml',tip:'Paste a public RSS URL'},
+  profile:     {title:'Add institution',        placeholder:'e.g. Pictet, Credit Agricole',tip:'Institution name for tracking'},
+};
+function openModal(ctx) {
+  currentCtx = ctx;
+  const cfg = modalConfig[ctx] || {};
+  document.getElementById('modal-title').textContent = cfg.title || 'Add Item';
+  document.getElementById('modal-inp').placeholder   = cfg.placeholder || '';
+  document.getElementById('modal-tip').textContent   = cfg.tip || '';
+  document.getElementById('modal-inp').value = '';
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('modal-inp').focus(),100);
+}
+function closeOverlay(e) {
+  if (e && e.target !== document.getElementById('overlay')) return;
+  document.getElementById('overlay').classList.remove('open');
+}
+document.getElementById('modal-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') submitModal(); });
+
+function submitModal() {
+  const val = document.getElementById('modal-inp').value.trim();
+  if (!val) return;
+  if (currentCtx==='summary')   { sumItems.push({id:val.toLowerCase(),lbl:val,sub:'Custom',sym:val,dec:2}); renderSumGrid(); loadSummary(); }
+  if (currentCtx==='fx')        { fxItems.push({pair:val.toUpperCase(),sym:val.toUpperCase().replace('/','')+'=X',dec:4}); loadFX(); }
+  if (currentCtx==='equities')  { etfItems.push({lbl:val.toUpperCase(),sym:val.toUpperCase(),dec:2}); loadEquities(); }
+  if (currentCtx==='news' && val.startsWith('http')) {
+    const key = 'custom_'+Date.now();
+    RSS_FEEDS[key] = {label:'Custom',url:val,tag:'t-gen',tagLabel:'Custom'};
+    loadNews();
+  }
+  if (currentCtx==='profile')   {
+    INSTITUTIONS.push({name:val,type:'Custom'});
+    renderProfileGrid();
+  }
+  document.getElementById('overlay').classList.remove('open');
+}
+</script>
+</body>
+</html>
