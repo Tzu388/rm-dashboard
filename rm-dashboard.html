@@ -787,6 +787,7 @@ body {
   <div id="proxy-notice"></div>
   <div class="news-tabs" id="news-tabs">
     <button class="news-tab-btn active" data-feed="all">All</button>
+    <button class="news-tab-btn" data-feed="institutions">🏦 Banks</button>
     <button class="news-tab-btn" data-feed="reuters">Reuters</button>
     <button class="news-tab-btn" data-feed="mas">MAS</button>
     <button class="news-tab-btn" data-feed="ft">FT</button>
@@ -835,7 +836,7 @@ body {
 // After you deploy your Cloudflare Worker, paste its URL here:
 // e.g. "https://rm-proxy.YOUR-SUBDOMAIN.workers.dev"
 // Leave as empty string to use direct fetch (works for CORS-safe APIs only)
-const PROXY_BASE = "https://rm-proxy.thokin.workers.dev";   // ← PASTE YOUR WORKER URL HERE
+const PROXY_BASE = "";   // ← PASTE YOUR WORKER URL HERE
 
 function proxy(url) {
   if (!PROXY_BASE) return url;          // direct if no proxy set
@@ -852,11 +853,50 @@ const HAS_PROXY = () => PROXY_BASE.length > 0;
    RSS FEED CONFIG
 ═══════════════════════════════════════════════ */
 const RSS_FEEDS = {
-  reuters:   { label:'Reuters', url:'https://feeds.reuters.com/reuters/businessNews', tag:'t-mkt', tagLabel:'Markets' },
-  mas:       { label:'MAS',     url:'https://www.mas.gov.sg/rss/news',               tag:'t-reg', tagLabel:'Regulatory' },
-  ft:        { label:'FT',      url:'https://www.ft.com/markets?format=rss',          tag:'t-fi',  tagLabel:'FT Markets' },
-  bloomberg: { label:'Bloomberg',url:'https://feeds.bloomberg.com/markets/news.rss',  tag:'t-fi',  tagLabel:'Bloomberg' },
+  reuters:   { label:'Reuters',   url:'https://feeds.reuters.com/reuters/businessNews', tag:'t-mkt', tagLabel:'Markets' },
+  mas:       { label:'MAS',       url:'https://www.mas.gov.sg/rss/news',               tag:'t-reg', tagLabel:'Regulatory' },
+  ft:        { label:'FT',        url:'https://www.ft.com/markets?format=rss',          tag:'t-fi',  tagLabel:'FT Markets' },
+  bloomberg: { label:'Bloomberg', url:'https://feeds.bloomberg.com/markets/news.rss',  tag:'t-fi',  tagLabel:'Bloomberg' },
 };
+
+/* ═══════════════════════════════════════════════
+   INSTITUTION KEYWORD MAP
+   Maps each institution to search terms used to
+   detect mentions in RSS headlines + descriptions
+═══════════════════════════════════════════════ */
+const INST_KEYWORDS = {
+  'DBS':                    ['DBS','DBS Bank','DBS Private'],
+  'OCBC / Bank of Singapore':['OCBC','Bank of Singapore','BoS'],
+  'UOB / UOB Kay Hian':     ['UOB','UOB Kay Hian','United Overseas Bank'],
+  'Maybank':                 ['Maybank','Malayan Banking'],
+  'CIMB':                    ['CIMB','CIMB Niaga','CIMB Private'],
+  'JPMorgan':                ['JPMorgan','JP Morgan','J.P. Morgan'],
+  'Citi Private Bank':       ['Citi','Citibank','Citigroup','Citi Private'],
+  'Morgan Stanley PB':       ['Morgan Stanley'],
+  'Bank of America':         ['Bank of America','BofA','Merrill Lynch'],
+  'Goldman Sachs PB':        ['Goldman Sachs','Goldman'],
+  'HSBC':                    ['HSBC'],
+  'Standard Chartered':      ['Standard Chartered','StanChart'],
+  'Barclays':                ['Barclays'],
+  'BNP Paribas':             ['BNP Paribas','BNP'],
+  'Société Générale':        ['Société Générale','SocGen','Societe Generale'],
+  'UBS':                     ['UBS'],
+  'Deutsche Bank':           ['Deutsche Bank','Deutsche'],
+  'Julius Baer':             ['Julius Baer','Julius Bär'],
+  'Union Bancaire Privée':   ['Union Bancaire','UBP'],
+  'Nomura':                  ['Nomura'],
+  'LGT':                     ['LGT'],
+  'EPF Malaysia':            ['EPF','Employees Provident Fund'],
+  'PNB Malaysia':            ['PNB','Permodalan Nasional'],
+};
+
+/* Returns array of matched institution names for a news item */
+function detectInstitutions(title='', desc='') {
+  const haystack = (title + ' ' + desc).toLowerCase();
+  return Object.entries(INST_KEYWORDS)
+    .filter(([, kws]) => kws.some(kw => haystack.includes(kw.toLowerCase())))
+    .map(([name]) => name);
+}
 
 /* ═══════════════════════════════════════════════
    INSTITUTIONS
@@ -1333,8 +1373,7 @@ async function loadNews() {
     document.getElementById('proxy-notice').innerHTML = `
       <div class="setup-banner">
         <b>⚠ Proxy not configured</b><br>
-        RSS news requires your Cloudflare Worker. Set <code>PROXY_BASE</code> in the HTML file to your Worker URL.<br>
-        <a href="#" onclick="showSetupHelp()">View setup guide ↗</a>
+        RSS news requires your Cloudflare Worker. Set <code>PROXY_BASE</code> in the HTML file to your Worker URL.
       </div>`;
     document.getElementById('news-body').innerHTML = renderStaticNews();
     return;
@@ -1349,11 +1388,15 @@ async function loadNews() {
     try {
       const res = await fetch(url);
       const data = await res.json();
-      newsCache[key] = (data.items || []).slice(0, 8).map(item => ({...item, _feed: key, _feedMeta: feed}));
+      newsCache[key] = (data.items || []).slice(0, 10).map(item => {
+        const matched = detectInstitutions(item.title, item.description);
+        return { ...item, _feed: key, _feedMeta: feed, _institutions: matched };
+      });
     } catch { newsCache[key] = []; }
   }));
 
   renderNews();
+
   // Setup news sub-tabs
   document.querySelectorAll('.news-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1369,23 +1412,52 @@ function renderNews() {
   let items = [];
   if (activeNewsFeed === 'all') {
     items = Object.values(newsCache).flat();
+  } else if (activeNewsFeed === 'institutions') {
+    // Only articles that mention at least one of the 23 tracked banks
+    items = Object.values(newsCache).flat().filter(item => item._institutions && item._institutions.length > 0);
   } else {
     items = newsCache[activeNewsFeed] || [];
   }
+
+  // Sort by date descending
+  items = items.slice().sort((a,b) => {
+    const da = a.pubDate ? new Date(a.pubDate) : 0;
+    const db = b.pubDate ? new Date(b.pubDate) : 0;
+    return db - da;
+  });
+
   if (!items.length) {
     document.getElementById('news-body').innerHTML =
-      `<div style="padding:20px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px">No items found</div>`;
+      `<div style="padding:24px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px">
+        ${activeNewsFeed === 'institutions' ? 'No institution-specific news found in current feeds.' : 'No items found.'}
+      </div>`;
     return;
   }
+
   document.getElementById('news-body').innerHTML = items.map((item,i) => {
     const feed = item._feedMeta;
     const time  = item.pubDate ? new Date(item.pubDate).toLocaleString('en-SG',{timeZone:'Asia/Singapore',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+    const insts = item._institutions || [];
+
+    // Institution badges — shown when article mentions a tracked bank
+    const instBadges = insts.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px">
+          ${insts.map(name => {
+            const shortName = name.split('/')[0].split(' ')[0]; // e.g. "DBS", "OCBC", "JPMorgan"
+            return `<span style="display:inline-block;background:rgba(61,139,255,0.12);color:var(--accent2);font-family:var(--sans);font-size:8px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:2px 7px;border-radius:20px">🏦 ${shortName}</span>`;
+          }).join('')}
+        </div>`
+      : '';
+
     return `<div class="news-item" draggable="true" data-idx="${i}" data-ctx="news"
       ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event,'newsCache')" ondragleave="dragLeave(event)">
-      <span class="n-tag ${feed.tag}">${feed.tagLabel}</span>
-      <div class="n-src">${feed.label}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span class="n-tag ${feed.tag}">${feed.tagLabel}</span>
+        <span class="n-src" style="margin-bottom:0">${feed.label}</span>
+      </div>
+      ${instBadges}
       <div class="n-hl">${item.title || 'No title'}</div>
-      <div class="n-body">${(item.description||'').slice(0,140)}…</div>
+      <div class="n-body">${(item.description||'').slice(0,160)}…</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
         <div class="n-time">${time}</div>
         ${item.link ? `<a class="n-link" href="${item.link}" target="_blank">Read →</a>` : ''}
@@ -1395,25 +1467,40 @@ function renderNews() {
 }
 
 function renderStaticNews() {
-  // Helpful fallback when proxy not set
   const staticItems = [
-    {tag:'t-reg',tl:'Regulatory',src:'MAS Singapore',hl:'MAS Issues Circular on Family Office Regulations',body:'Monetary Authority of Singapore updates requirements for Variable Capital Companies and single-family offices.',link:'https://www.mas.gov.sg/news'},
-    {tag:'t-fi', tl:'Institution', src:'Reuters Finance',hl:'Asia Private Banking Sees Record AUM Inflows',body:'Southeast Asia wealth managers report strongest quarterly inflows since 2021 as regional UHNW wealth grows.',link:'https://reuters.com/business'},
-    {tag:'t-mkt',tl:'Markets',    src:'FT Markets',hl:'Asian Equities Rally on Fed Pause Expectations',body:'Regional indices up 0.8-1.2% as bond markets signal lower-for-longer US rates through H2 2025.',link:'https://www.ft.com/markets'},
-    {tag:'t-mkt',tl:'Markets',    src:'Bloomberg Asia',hl:'USD/SGD Holds Steady Ahead of Fed Decision',body:'Singapore dollar stable at 1.34 range as traders await FOMC minutes due Wednesday.',link:'https://bloomberg.com'},
-    {tag:'t-aum',tl:'AUM Flow',   src:'Reuters',hl:'Family Offices Triple Singapore Headcount',body:'MAS data shows 1,650+ single family offices now domiciled in Singapore, up sharply from 700 in 2021.',link:'https://reuters.com'},
+    {tag:'t-fi', tl:'Institution', src:'Reuters Finance', hl:'UBS Accelerates Credit Suisse Integration in Asia Private Banking', body:'UBS targets S$50bn in synergies from the Credit Suisse merger, with Asia private banking headcount consolidation expected by Q3.', link:'https://reuters.com/business', insts:['UBS']},
+    {tag:'t-reg',tl:'Regulatory',  src:'MAS Singapore',   hl:'MAS Issues Updated Family Office Circular for VCC Structures', body:'Monetary Authority of Singapore tightens due diligence requirements for Variable Capital Companies used by single-family offices.', link:'https://www.mas.gov.sg/news', insts:[]},
+    {tag:'t-fi', tl:'Institution', src:'Bloomberg',        hl:'DBS and OCBC Report Record Wealth Management Fee Income', body:'Singapore\'s largest local banks post double-digit growth in private banking AUM, driven by Southeast Asian UHNW inflows and family office demand.', link:'https://bloomberg.com', insts:['DBS','OCBC / Bank of Singapore']},
+    {tag:'t-mkt',tl:'Markets',     src:'FT Markets',       hl:'Asian Equities Rally on Fed Pause Expectations', body:'Regional indices up 0.8–1.2% as bond markets signal lower-for-longer US rates through H2 2025.', link:'https://www.ft.com/markets', insts:[]},
+    {tag:'t-fi', tl:'Institution', src:'Reuters',          hl:'Julius Baer and LGT Expand Singapore Headcount After CS Windfall', body:'Swiss private banks continue poaching Credit Suisse alumni, growing their Singapore RM teams by 15–20% year-on-year.', link:'https://reuters.com', insts:['Julius Baer','LGT']},
+    {tag:'t-aum',tl:'AUM Flow',    src:'Bloomberg Asia',   hl:'Maybank and CIMB See Record Islamic Wealth Inflows', body:'Malaysian banks report surge in Shariah-compliant private wealth mandates as Gulf sovereign capital seeks ASEAN exposure.', link:'https://bloomberg.com', insts:['Maybank','CIMB']},
+    {tag:'t-fi', tl:'Institution', src:'FT',               hl:'Goldman Sachs and JPMorgan Battle for Singapore Family Office Mandates', body:'US bulge bracket banks intensifying coverage of Singapore\'s 1,650+ family offices, competing on alternatives access and bespoke lending.', link:'https://www.ft.com', insts:['Goldman Sachs PB','JPMorgan']},
+    {tag:'t-reg',tl:'Regulatory',  src:'MAS',              hl:'EPF Malaysia Increases Overseas Allocation Cap to 45%', body:'Employees Provident Fund granted regulatory approval to raise international investment limit, targeting global private equity and infrastructure.', link:'https://www.mas.gov.sg', insts:['EPF Malaysia']},
   ];
-  return staticItems.map(item=>`
+  return staticItems.map(item => {
+    const instBadges = item.insts && item.insts.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px">
+          ${item.insts.map(name => {
+            const shortName = name.split('/')[0].split(' ')[0];
+            return `<span style="display:inline-block;background:rgba(61,139,255,0.12);color:var(--accent2);font-family:var(--sans);font-size:8px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:2px 7px;border-radius:20px">🏦 ${shortName}</span>`;
+          }).join('')}
+        </div>`
+      : '';
+    return `
     <div class="news-item">
-      <span class="n-tag ${item.tag}">${item.tl}</span>
-      <div class="n-src">${item.src}</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span class="n-tag ${item.tag}">${item.tl}</span>
+        <span class="n-src" style="margin-bottom:0">${item.src}</span>
+      </div>
+      ${instBadges}
       <div class="n-hl">${item.hl}</div>
       <div class="n-body">${item.body}</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
         <div class="n-time">Sample · configure proxy for live news</div>
         <a class="n-link" href="${item.link}" target="_blank">Read →</a>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 /* ═══════════════════════════════════════════════
