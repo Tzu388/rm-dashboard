@@ -836,7 +836,7 @@ body {
 // After you deploy your Cloudflare Worker, paste its URL here:
 // e.g. "https://rm-proxy.YOUR-SUBDOMAIN.workers.dev"
 // Leave as empty string to use direct fetch (works for CORS-safe APIs only)
-const PROXY_BASE = "";   // ← PASTE YOUR WORKER URL HERE
+const PROXY_BASE = "https://rm-proxy.thokin.workers.dev";   // ← PASTE YOUR WORKER URL HERE
 
 function proxy(url) {
   if (!PROXY_BASE) return url;          // direct if no proxy set
